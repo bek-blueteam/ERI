@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>O'z DSt 1092:2009 + 1106:2009 — A va B</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&family=Rajdhani:wght@400;600;700&display=swap');
+
+:root {
+  --bg:      #06080c;
+  --panel:   #0b0f18;
+  --panel2:  #0d1320;
+  --border:  #1a2535;
+  --border2: #243448;
+  --cyan:    #00e5ff;
+  --green:   #00ff9d;
+  --orange:  #ff8c42;
+  --purple:  #c77dff;
+  --red:     #ff4757;
+  --yellow:  #ffd166;
+  --pink:    #ff79c6;
+  --text:    #c9d1d9;
+  --muted:   #4a5568;
+  --mono:    'Share Tech Mono', monospace;
+  --title:   'Orbitron', monospace;
+  --sans:    'Rajdhani', sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;overflow-x:hidden}
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:linear-gradient(rgba(0,229,255,0.022) 1px,transparent 1px),linear-gradient(90deg,rgba(181,122,255,0.022) 1px,transparent 1px);
+  background-size:48px 48px;pointer-events:none;z-index:0;
+  animation:gridmove 25s linear infinite;
+}
+@keyframes gridmove{0%{background-position:0 0}100%{background-position:48px 48px}}
+
+/* ── HEADER ── */
+.header{text-align:center;padding:28px 16px 20px;border-bottom:1px solid var(--border);position:relative;z-index:1}
+.header-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:var(--mono);font-size:10px;letter-spacing:3px;
+  color:var(--cyan);border:1px solid rgba(0,229,255,0.3);padding:3px 14px;margin-bottom:12px;
+}
+.header h1{font-family:var(--title);font-size:18px;font-weight:900;color:#fff;letter-spacing:2px;margin-bottom:6px}
+.header h1 .a{color:var(--cyan)} .header h1 .b{color:var(--purple)}
+.header h1 .h{color:var(--green)}
+.header p{font-family:var(--mono);font-size:10px;color:var(--muted);line-height:1.8}
+.std-tags{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+.std-tag{
+  font-family:var(--mono);font-size:10px;letter-spacing:1px;
+  padding:3px 12px;border-radius:20px;border:1px solid;
+}
+.std-tag.eri{border-color:var(--cyan);color:var(--cyan);background:rgba(0,229,255,0.07)}
+.std-tag.hash{border-color:var(--green);color:var(--green);background:rgba(0,255,157,0.07)}
+
+/* ── TRANSFER BAR ── */
+.transfer-bar{
+  background:linear-gradient(90deg,rgba(0,229,255,0.04),rgba(181,122,255,0.04));
+  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  padding:8px 16px;display:flex;align-items:center;justify-content:center;gap:10px;
+  font-family:var(--mono);font-size:10px;color:var(--muted);flex-wrap:wrap;
+  position:relative;z-index:1;transition:background .5s;
+}
+.transfer-bar .a{color:var(--cyan)} .transfer-bar .b{color:var(--purple)}
+.transfer-bar .arrow{color:var(--orange)}
+
+/* ── MAIN GRID ── */
+.main{display:grid;grid-template-columns:1fr 1fr;position:relative;z-index:1}
+.divider{position:absolute;left:50%;top:0;bottom:0;width:1px;background:linear-gradient(to bottom,transparent,var(--border) 8%,var(--border) 92%,transparent);z-index:2}
+.user-col{padding:20px 16px 48px}
+
+/* ── USER HEADER ── */
+.user-header{display:flex;align-items:center;gap:10px;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.user-badge{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:15px;font-weight:700;flex-shrink:0}
+.user-a .user-badge{background:rgba(0,229,255,0.08);border:1.5px solid var(--cyan);color:var(--cyan)}
+.user-b .user-badge{background:rgba(181,122,255,0.08);border:1.5px solid var(--purple);color:var(--purple)}
+.user-info h2{font-size:14px;font-weight:700;letter-spacing:1px}
+.user-a .user-info h2{color:var(--cyan)} .user-b .user-info h2{color:var(--purple)}
+.user-info p{font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:2px}
+
+/* ── CARD ── */
+.card{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:14px;margin-bottom:10px;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;border-radius:4px 0 0 4px;opacity:.45}
+.user-a .card::before{background:var(--cyan)} .user-b .card::before{background:var(--purple)}
+/* hash card override */
+.card.hash-card::before{background:var(--green)!important;opacity:.6}
+
+.card-title{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.card-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.user-a .card-title{color:var(--cyan)} .user-b .card-title{color:var(--purple)}
+.card.hash-card .card-title{color:var(--green)!important}
+
+/* ── FORM ── */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.form-row.single{grid-template-columns:1fr}
+.form-group{display:flex;flex-direction:column;gap:3px}
+label{font-size:9px;font-family:var(--mono);color:var(--muted);letter-spacing:1px}
+label span{color:var(--orange)}
+input,textarea{
+  background:#070b12;border:1px solid var(--border2);
+  color:var(--text);font-family:var(--mono);font-size:11px;
+  padding:6px 9px;border-radius:3px;outline:none;transition:border-color .2s;width:100%;
+}
+.user-a input:focus,.user-a textarea:focus{border-color:var(--cyan)}
+.user-b input:focus,.user-b textarea:focus{border-color:var(--purple)}
+input.error{border-color:var(--red)!important}
+textarea{resize:vertical;min-height:54px}
+.err-msg{font-family:var(--mono);font-size:9px;color:var(--red);margin-top:2px;display:none}
+.err-msg.show{display:block}
+
+/* ── BUTTONS ── */
+.btn{padding:7px 13px;border:1px solid;font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:1px;cursor:pointer;border-radius:3px;transition:all .2s;text-transform:uppercase}
+.btn-a{background:rgba(0,229,255,0.07);border-color:var(--cyan);color:var(--cyan)}
+.btn-a:hover{background:rgba(0,229,255,0.17)}
+.btn-a2{background:rgba(0,255,157,0.07);border-color:var(--green);color:var(--green)}
+.btn-a2:hover{background:rgba(0,255,157,0.17)}
+.btn-b{background:rgba(181,122,255,0.07);border-color:var(--purple);color:var(--purple)}
+.btn-b:hover{background:rgba(181,122,255,0.17)}
+.btn-b2{background:rgba(255,121,198,0.07);border-color:var(--pink);color:var(--pink)}
+.btn-b2:hover{background:rgba(255,121,198,0.17)}
+.btn-warn{background:rgba(255,140,66,0.07);border-color:var(--orange);color:var(--orange)}
+.btn-warn:hover{background:rgba(255,140,66,0.17)}
+.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+
+/* ── LOG ── */
+.log{
+  background:#050810;border:1px solid var(--border);border-radius:3px;
+  padding:8px;font-family:var(--mono);font-size:10px;color:var(--muted);
+  max-height:120px;overflow-y:auto;line-height:1.75;
+}
+.log-line{color:var(--text)}
+.log-line.ok{color:var(--green)}
+.log-line.ia{color:var(--cyan)}
+.log-line.ib{color:var(--purple)}
+.log-line.ih{color:var(--yellow)}
+.log-line.warn{color:var(--orange)}
+
+/* ── INFO GRID ── */
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}
+.info-item{display:flex;flex-direction:column;gap:3px}
+.info-label{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.5px}
+.info-val{font-family:var(--mono);font-size:10px;word-break:break-all}
+.user-a .info-val{color:var(--cyan)} .user-b .info-val{color:var(--purple)}
+.hash-card .info-val{color:var(--green)!important}
+
+/* ── PQ STEP ── */
+.pq-step{font-family:var(--mono);font-size:9px;padding:3px 10px;border:1px solid var(--border);border-radius:20px;color:var(--muted);display:inline-block;margin-bottom:8px}
+.pq-step.done{border-color:var(--green);color:var(--green)}
+
+/* ── SIG DISPLAY ── */
+.sig-label{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.5px;margin-top:8px;margin-bottom:2px}
+.sig-val{font-family:var(--mono);font-size:10px;color:var(--orange);word-break:break-all}
+
+/* ── STATUS ── */
+.status-box{padding:10px;border-radius:3px;font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:1px;text-align:center;margin-top:10px;display:none}
+.status-box.show{display:block}
+.status-box.ok{background:rgba(0,255,157,0.07);border:1px solid var(--green);color:var(--green)}
+.status-box.fail{background:rgba(255,71,87,0.07);border:1px solid var(--red);color:var(--red)}
+
+/* ── HASH DETAIL TABLE ── */
+.hash-table-wrap{overflow-x:auto;margin-top:8px}
+.hash-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:9px}
+.hash-table th{text-align:left;padding:4px 6px;color:var(--muted);border-bottom:1px solid var(--border);font-weight:400;letter-spacing:.8px;font-size:8.5px;white-space:nowrap}
+.hash-table td{padding:4px 6px;border-bottom:1px solid rgba(26,37,53,.4);vertical-align:top}
+.hash-table tr:hover td{background:rgba(0,255,157,.03)}
+.col-i{color:var(--muted)}
+.col-ch{color:var(--yellow)}
+.col-mi{color:var(--orange)}
+.col-xr{color:var(--purple)}
+.col-hi{color:var(--green);word-break:break-all;font-size:8.5px}
+
+/* ── COLLAPSIBLE HASH DETAIL ── */
+.hash-toggle{
+  font-family:var(--mono);font-size:9px;letter-spacing:1px;
+  color:var(--green);cursor:pointer;
+  background:rgba(0,255,157,0.05);border:1px solid rgba(0,255,157,0.2);
+  border-radius:3px;padding:4px 10px;display:inline-flex;align-items:center;gap:6px;
+  margin-top:6px;transition:all .2s;
+}
+.hash-toggle:hover{background:rgba(0,255,157,0.12)}
+.hash-detail{display:none;margin-top:8px}
+.hash-detail.open{display:block}
+
+/* ── HASH SUMMARY ROW ── */
+.hash-summary{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px;
+}
+.hs-item{background:rgba(0,255,157,0.04);border:1px solid rgba(0,255,157,0.15);border-radius:3px;padding:6px 8px}
+.hs-label{font-family:var(--mono);font-size:8.5px;color:var(--muted);margin-bottom:3px}
+.hs-val{font-family:var(--mono);font-size:9px;color:var(--green);word-break:break-all}
+
+/* ── N BADGE ── */
+.n-badge{
+  font-family:var(--mono);font-size:9px;color:var(--purple);
+  background:rgba(181,122,255,0.06);border:1px solid rgba(181,122,255,0.2);
+  border-radius:3px;padding:4px 10px;margin-top:6px;word-break:break-all;
+  line-height:1.6;display:block;
+}
+
+/* ── RESPONSIVE ── */
+@media(max-width:780px){
+  .main{grid-template-columns:1fr}
+  .divider{display:none}
+  .user-col.user-a{border-bottom:2px solid var(--border)}
+  .form-row{grid-template-columns:1fr}
+  .info-grid{grid-template-columns:1fr}
+  .hash-summary{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-badge">INTEGRATSIYA · KRIPTOGRAFIK TIZIM</div>
+  <h1>
+    O'z DSt <span class="a">1092</span>:<span class="a">2009</span>
+    &nbsp;+&nbsp;
+    O'z DSt <span class="h">1106</span>:<span class="h">2009</span>
+  </h1>
+  <p>ERI Algoritm 1 (μ=0) &nbsp;·&nbsp; Xesh 1-Algoritm (H₀=123456, M_i=8bit, mod N)</p>
+  <div class="std-tags">
+    <span class="std-tag eri">1092:2009 · ERI</span>
+    <span class="std-tag hash">1106:2009 · XESH</span>
+    <span class="std-tag eri" style="border-color:var(--purple);color:var(--purple);background:rgba(181,122,255,0.07)">Foydalanuvchi A &amp; B</span>
+  </div>
+</div>
+
+<!-- TRANSFER BAR -->
+<div class="transfer-bar" id="transfer-bar">
+  <span class="a">A</span> — kalit &amp; imzo
+  <span class="arrow">─────→</span>
+  1106 Xesh + 1092 ERI
+  <span class="arrow">─────→</span>
+  <span class="b">B</span> — qabul &amp; tekshirish
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="divider"></div>
+
+  <!-- ═══════════ FOYDALANUVCHI A ═══════════ -->
+  <div class="user-col user-a">
+    <div class="user-header">
+      <div class="user-badge">A</div>
+      <div class="user-info">
+        <h2>FOYDALANUVCHI A</h2>
+        <p>YUBORUVCHI · IMZOLOVCHI</p>
+      </div>
+    </div>
+
+    <!-- 1. p va q -->
+    <div class="card">
+      <div class="card-title"><div class="card-dot" style="background:var(--cyan)"></div>// 1. ERI PARAMETRLARI (p, q)</div>
+      <div class="pq-step" id="a-step-pq">p, q tanlanmagan</div>
+      <div class="info-grid">
+        <div class="info-item"><div class="info-label">q (tub son)</div><div class="info-val" id="a-disp-q">—</div></div>
+        <div class="info-item"><div class="info-label">p (katta tub son)</div><div class="info-val" id="a-disp-p">—</div></div>
+      </div>
+      <div class="btn-row"><button class="btn btn-a" onclick="newPQ()">⟳ YANGI p va q</button></div>
+    </div>
+
+    <!-- 2. Maxfiy kalitlar -->
+    <div class="card">
+      <div class="card-title"><div class="card-dot" style="background:var(--cyan)"></div>// 2. MAXFIY PARAMETRLAR</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>h <span>(h &lt; p)</span></label>
+          <input type="number" id="a-inp-h" placeholder="mas: 7" min="2"/>
+          <div class="err-msg" id="a-err-h"></div>
+        </div>
+        <div class="form-group">
+          <label>R <span>(R &lt; q)</span></label>
+          <input type="number" id="a-inp-R" placeholder="mas: 3" min="1"/>
+          <div class="err-msg" id="a-err-R"></div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>x <span>(maxfiy 1, 1&lt;x&lt;q)</span></label>
+          <input type="number" id="a-inp-x" placeholder="mas: 12345" min="2"/>
+          <div class="err-msg" id="a-err-x"></div>
+        </div>
+        <div class="form-group">
+          <label>u <span>(maxfiy 2, 1&lt;u&lt;q)</span></label>
+          <input type="number" id="a-inp-u" placeholder="mas: 67890" min="2"/>
+          <div class="err-msg" id="a-err-u"></div>
+        </div>
+      </div>
+      <div class="btn-row"><button class="btn btn-a2" onclick="generateKeys()">⚙ KALITLARNI HISOBLASH</button></div>
+    </div>
+
+    <div class="card" id="a-keys-result" style="display:none">
+      <div class="card-title"><div class="card-dot" style="background:var(--cyan)"></div>// Hisoblangan kalitlar</div>
+      <div class="log" id="a-key-log"></div>
+      <div class="info-grid" style="margin-top:10px">
+        <div class="info-item"><div class="info-label">g (generator)</div><div class="info-val" id="a-disp-g">—</div></div>
+        <div class="info-item"><div class="info-label">R (parametr)</div><div class="info-val" id="a-disp-R">—</div></div>
+        <div class="info-item"><div class="info-label">y = g\x mod p</div><div class="info-val" id="a-disp-y">—</div></div>
+        <div class="info-item"><div class="info-label">z = g\u mod p</div><div class="info-val" id="a-disp-z">—</div></div>
+      </div>
+    </div>
+
+    <!-- 3. 1106 XESH -->
+    <div class="card hash-card">
+      <div class="card-title"><div class="card-dot" style="background:var(--green)"></div>// 3. XESH — O'z DSt 1106:2009 · 1-Alg</div>
+      <span class="n-badge" id="a-n-badge">N (xesh moduli): <span id="a-n-short">—</span></span>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:8px;line-height:1.8">
+        H₀ = 123456 &nbsp;|&nbsp; M_i = 8 bit (har bayt)<br>
+        H_i = ((H_{i-1} ⊕ M_i) + M_i)² mod N<br>
+        H_L = ((H_last ⊕ L) + L)² mod N<br>
+        H_final = ((H_L ⊕ S) + S)² mod N<br>
+        <span style="color:var(--green)">m = H_final mod q</span> &nbsp;← ERI uchun
+      </div>
+    </div>
+
+    <!-- 4. Imzolash -->
+    <div class="card">
+      <div class="card-title"><div class="card-dot" style="background:var(--cyan)"></div>// 4. XABARNI IMZOLASH</div>
+      <div class="form-row single">
+        <div class="form-group">
+          <label>Xabar M</label>
+          <textarea id="a-inp-msg" placeholder="Imzolanadigan matnni kiriting..."></textarea>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-a" onclick="signMessage()">✎ IMZOLASH</button>
+        <button class="btn btn-warn" onclick="transferToB()">→ B GA YUBORISH</button>
+      </div>
+    </div>
+
+    <div class="card" id="a-sign-result" style="display:none">
+      <div class="card-title"><div class="card-dot" style="background:var(--cyan)"></div>// Xesh + Imzo natijasi</div>
+
+      <!-- HASH DETAIL -->
+      <div style="font-family:var(--mono);font-size:9px;color:var(--green);letter-spacing:1px;margin-bottom:4px">▸ 1106:2009 XESH BOSQICHLARI</div>
+      <div class="hash-summary" id="a-hash-summary"></div>
+      <div class="hash-toggle" onclick="toggleHash('a-hash-detail','a-hash-arrow')">
+        <span id="a-hash-arrow">▶</span> BAYT-BAYT JADVAL
+      </div>
+      <div class="hash-detail" id="a-hash-detail">
+        <div class="hash-table-wrap"><table class="hash-table" id="a-hash-table">
+          <thead><tr>
+            <th>i</th><th>Belgi</th><th>M_i</th><th>H_{i-1}⊕M_i</th><th>H_i mod N</th>
+          </tr></thead>
+          <tbody id="a-hash-tbody"></tbody>
+        </table></div>
+      </div>
+
+      <!-- ERI LOG -->
+      <div style="font-family:var(--mono);font-size:9px;color:var(--cyan);letter-spacing:1px;margin:10px 0 4px">▸ 1092:2009 ERI BOSQICHLARI</div>
+      <div class="log" id="a-sign-log"></div>
+      <div class="sig-label">m = H_final mod q</div><div class="sig-val" id="a-disp-m">—</div>
+      <div class="sig-label">r komponenti</div><div class="sig-val" id="a-disp-r">—</div>
+      <div class="sig-label">s komponenti</div><div class="sig-val" id="a-disp-s">—</div>
+    </div>
+
+  </div><!-- /user-a -->
+
+  <!-- ═══════════ FOYDALANUVCHI B ═══════════ -->
+  <div class="user-col user-b">
+    <div class="user-header">
+      <div class="user-badge">B</div>
+      <div class="user-info">
+        <h2>FOYDALANUVCHI B</h2>
+        <p>QABUL QILUVCHI · TEKSHIRUVCHI</p>
+      </div>
+    </div>
+
+    <!-- Qabul qilingan ochiq kalitlar -->
+    <div class="card">
+      <div class="card-title"><div class="card-dot" style="background:var(--purple)"></div>// A dan qabul qilingan ochiq kalitlar</div>
+      <div id="b-no-keys" style="font-family:var(--mono);font-size:10px;color:var(--muted);padding:4px 0">
+        ⟵ A foydalanuvchining kalitlari kutilmoqda...
+      </div>
+      <div id="b-pub-keys" style="display:none">
+        <div class="info-grid">
+          <div class="info-item"><div class="info-label">q</div><div class="info-val" id="b-recv-q">—</div></div>
+          <div class="info-item"><div class="info-label">p</div><div class="info-val" id="b-recv-p">—</div></div>
+          <div class="info-item"><div class="info-label">R</div><div class="info-val" id="b-recv-R">—</div></div>
+          <div class="info-item"><div class="info-label">g</div><div class="info-val" id="b-recv-g">—</div></div>
+          <div class="info-item"><div class="info-label">y (ochiq kalit 1)</div><div class="info-val" id="b-recv-y">—</div></div>
+          <div class="info-item"><div class="info-label">z (ochiq kalit 2)</div><div class="info-val" id="b-recv-z">—</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1106 XESH (B) -->
+    <div class="card hash-card">
+      <div class="card-title"><div class="card-dot" style="background:var(--green)"></div>// XESH — O'z DSt 1106:2009 · 1-Alg (B)</div>
+      <span class="n-badge">N (xesh moduli): <span id="b-n-short" style="color:var(--green)">—</span></span>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:8px;line-height:1.8">
+        B ham xuddi shu N va H₀=123456 bilan xabarni xeshlaydi.<br>
+        <span style="color:var(--green)">m = H_final mod q</span> &nbsp;← tekshirish uchun
+      </div>
+    </div>
+
+    <!-- Tekshirish -->
+    <div class="card">
+      <div class="card-title"><div class="card-dot" style="background:var(--purple)"></div>// IMZONI TEKSHIRISH</div>
+      <div class="form-row single">
+        <div class="form-group">
+          <label>Xabar M (A dan kelgan)</label>
+          <textarea id="b-ver-msg" placeholder="A dan kelgan xabar..."></textarea>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>r komponenti</label>
+          <input type="text" id="b-ver-r" placeholder="r"/>
+        </div>
+        <div class="form-group">
+          <label>s komponenti</label>
+          <input type="text" id="b-ver-s" placeholder="s"/>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-b2" onclick="autoFillVerify()">⟵ AVTOTO'LDIRISH</button>
+        <button class="btn btn-b" onclick="verifySignature()">✔ TEKSHIRISH</button>
+      </div>
+    </div>
+
+    <div class="card" id="b-ver-result" style="display:none">
+      <div class="card-title"><div class="card-dot" style="background:var(--purple)"></div>// Xesh + Tekshirish natijasi</div>
+
+      <div style="font-family:var(--mono);font-size:9px;color:var(--green);letter-spacing:1px;margin-bottom:4px">▸ 1106:2009 XESH BOSQICHLARI</div>
+      <div class="hash-summary" id="b-hash-summary"></div>
+      <div class="hash-toggle" onclick="toggleHash('b-hash-detail','b-hash-arrow')">
+        <span id="b-hash-arrow">▶</span> BAYT-BAYT JADVAL
+      </div>
+      <div class="hash-detail" id="b-hash-detail">
+        <div class="hash-table-wrap"><table class="hash-table">
+          <thead><tr>
+            <th>i</th><th>Belgi</th><th>M_i</th><th>H_{i-1}⊕M_i</th><th>H_i mod N</th>
+          </tr></thead>
+          <tbody id="b-hash-tbody"></tbody>
+        </table></div>
+      </div>
+
+      <div style="font-family:var(--mono);font-size:9px;color:var(--purple);letter-spacing:1px;margin:10px 0 4px">▸ 1092:2009 ERI TEKSHIRISH</div>
+      <div class="log" id="b-ver-log"></div>
+      <div class="status-box" id="b-ver-status"></div>
+    </div>
+
+   
+
+  </div><!-- /user-b -->
+</div><!-- /main -->
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  KONSTANTA: N xesh moduli (256-bit tub son, 1106:2009 uchun)
+// ═══════════════════════════════════════════════════════
+const N_HASH = 115792089237316195423570985008687907853269984665640564039457584007913129639747n;
+// Bu — secp256k1 egri chizig'ining soni p = 2^256 − 2^32 − 977 dan olingan yaqin 256-bit tub son
+
+// ── Qisqa ko'rinish ──
+function shortN(n) {
+  const s = n.toString();
+  return s.slice(0,10)+'…'+s.slice(-10)+' (256-bit)';
+}
+document.getElementById('a-n-short').textContent = shortN(N_HASH);
+document.getElementById('b-n-short').textContent = shortN(N_HASH);
+
+// ═══════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════
+const SA = { p:0n,q:0n,R:0n,g:0n,x:0n,u:0n,y:0n,z:0n,r:0n,s:0n,msg:'',ready:false };
+
+const PQ_LIST = [
+  [1000003n,100026300079n],[1000037n,100019700593n],[1000039n,100041901483n],
+  [1000081n,100008100001n],[1000099n,100029901981n],[1000117n,100047704213n],
+  [1000121n,100040103389n],[1000133n,100015300267n],[1000151n,100023101209n],[1000159n,100015900001n],
+];
+
+// ═══════════════════════════════════════════════════════
+//  MODULAR ARIFMETIKA (ERI uchun)
+// ═══════════════════════════════════════════════════════
+function mod(a,n){return((a%n)+n)%n}
+function modInv(a,m){
+  let[old_r,r]=[mod(a,m),m],[old_s,s]=[1n,0n];
+  while(r!==0n){const q=old_r/r;[old_r,r]=[r,old_r-q*r];[old_s,s]=[s,old_s-q*s];}
+  if(old_r!==1n)return null;return mod(old_s,m);
+}
+function pmul(X,Y,R,p){return mod(X+mod((1n+mod(X*R,p))*Y,p),p)}
+function psq(X,R,p){return mod(X*mod(2n+mod(X*R,p),p),p)}
+function pinv(X,R,p){const d=modInv(mod(1n+mod(X*R,p),p),p);if(d===null)return null;return mod(-X*d,p)}
+function ppow(X,e,R,p){
+  if(e===0n)return 0n;
+  if(e<0n){const pos=ppow(X,-e,R,p);return pinv(pos,R,p);}
+  let result=null,base=X,exp=e;
+  while(exp>0n){
+    if(exp%2n===1n)result=result===null?base:pmul(result,base,R,p);
+    exp>>=1n;if(exp>0n)base=psq(base,R,p);
+  }
+  return result===null?0n:result;
+}
+
+// ═══════════════════════════════════════════════════════
+//  1106:2009 XESH — ASOSIY FUNKSIYA
+//  N = N_HASH (256-bit), H0=123456, Mi=8bit
+//  Qaytaradi: { m, steps, S, L, H_L, H_final }
+// ═══════════════════════════════════════════════════════
+function hashStep1106(H, M) {
+  // H_i = ((H_{i-1} XOR M_i) + M_i)^2 mod N
+  const xorv = H ^ M;
+  const s    = mod(xorv + M, N_HASH);
+  return { xorv, Hi: mod(s * s, N_HASH) };
+}
+
+function computeHash(msg, q) {
+  const bytes = new TextEncoder().encode(msg);
+  let H = 123456n;
+  let S = 0n;
+  const steps = [];
+
+  for (const b of bytes) {
+    const M  = BigInt(b);
+    const Hp = H;
+    const { xorv, Hi } = hashStep1106(H, M);
+    H = Hi;
+    S ^= M;
+    steps.push({ char: String.fromCharCode(b), dec: M, bin: M.toString(2).padStart(8,'0'), xorv, Hi });
+  }
+
+  const Hlast = H;
+  const L = BigInt(bytes.length * 8);
+
+  const r_L  = hashStep1106(Hlast, L);
+  const H_L  = r_L.Hi;
+
+  const r_S  = hashStep1106(H_L, S);
+  const H_final = r_S.Hi;
+
+  const m = mod(H_final, q);
+
+  return { m, steps, S, L, H_L, H_final, Hlast, xorL: r_L.xorv, xorS: r_S.xorv };
+}
+
+// ═══════════════════════════════════════════════════════
+//  UI YORDAMCHILAR
+// ═══════════════════════════════════════════════════════
+function $(id){return document.getElementById(id)}
+function log(id,msg,cls=''){
+  const el=$(id),d=document.createElement('div');
+  d.className='log-line'+(cls?' '+cls:'');d.textContent=msg;
+  el.appendChild(d);el.scrollTop=el.scrollHeight;
+}
+function clearLog(id){$(id).innerHTML=''}
+function showErr(id,msg=''){const e=$(id);if(msg){e.textContent=msg;e.classList.add('show')}else e.classList.remove('show')}
+function setDisp(id,v){$(id).textContent=v.toString()}
+function shortBig(n){const s=n.toString();return s.length>22?s.slice(0,11)+'…'+s.slice(-9):s}
+function escH(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+function toggleHash(detailId, arrowId){
+  const d=$(detailId),a=$(arrowId);
+  const open=d.classList.toggle('open');
+  a.textContent=open?'▼':'▶';
+}
+
+// ═══════════════════════════════════════════════════════
+//  XESH VIZUALIZATSIYA RENDER
+// ═══════════════════════════════════════════════════════
+function renderHashDetail(tbodyId, summaryId, hashResult) {
+  const { steps, S, L, H_L, H_final, Hlast, xorL, xorS, m } = hashResult;
+
+  // Jadval
+  const tbody = $(tbodyId);
+  tbody.innerHTML = '';
+  steps.forEach((st, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="col-i">${i+1}</td>
+      <td class="col-ch">${escH(st.char)}</td>
+      <td class="col-mi">${st.dec}</td>
+      <td class="col-xr">${shortBig(st.xorv)}</td>
+      <td class="col-hi">${shortBig(st.Hi)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // Xulosa
+  $(summaryId).innerHTML = `
+    <div class="hs-item"><div class="hs-label">L (bitlar)</div><div class="hs-val">${L}</div></div>
+    <div class="hs-item"><div class="hs-label">S = ⊕(M_i)</div><div class="hs-val">${S}</div></div>
+    <div class="hs-item"><div class="hs-label">H_last mod N</div><div class="hs-val">${shortBig(Hlast)}</div></div>
+    <div class="hs-item"><div class="hs-label">H_L = ((H_last⊕L)+L)² mod N</div><div class="hs-val">${shortBig(H_L)}</div></div>
+    <div class="hs-item"><div class="hs-label">H_final = ((H_L⊕S)+S)² mod N</div><div class="hs-val">${shortBig(H_final)}</div></div>
+    <div class="hs-item" style="border-color:rgba(0,229,255,.3)"><div class="hs-label" style="color:var(--cyan)">m = H_final mod q</div><div class="hs-val" style="color:var(--cyan)">${m}</div></div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════
+//  A: YANGI p, q
+// ═══════════════════════════════════════════════════════
+function newPQ(){
+  const idx=Math.floor(Math.random()*PQ_LIST.length);
+  const[q,p]=PQ_LIST[idx];
+  SA.q=q;SA.p=p;SA.ready=false;
+  setDisp('a-disp-q',q.toString());setDisp('a-disp-p',p.toString());
+  $('a-step-pq').textContent=`q=${q} · p=${p}`;
+  $('a-step-pq').className='pq-step done';
+}
+
+// ═══════════════════════════════════════════════════════
+//  A: KALIT GENERATSIYA
+// ═══════════════════════════════════════════════════════
+function generateKeys(){
+  if(!SA.q||!SA.p){alert('Avval p va q tanlang!');return}
+  const hV=BigInt($('a-inp-h').value||'0'),RV=BigInt($('a-inp-R').value||'0');
+  const xV=BigInt($('a-inp-x').value||'0'),uV=BigInt($('a-inp-u').value||'0');
+  const{p,q}=SA;let ok=true;
+  if(hV<2n||hV>=p){showErr('a-err-h',`2 ≤ h < ${p}`);ok=false}else showErr('a-err-h');
+  if(RV<1n||RV>=q){showErr('a-err-R',`1 ≤ R < ${q}`);ok=false}else showErr('a-err-R');
+  if(xV<=1n||xV>=q){showErr('a-err-x',`1 < x < ${q}`);ok=false}else showErr('a-err-x');
+  if(uV<=1n||uV>=q){showErr('a-err-u',`1 < u < ${q}`);ok=false}else showErr('a-err-u');
+  if(!ok)return;
+  SA.R=RV;SA.x=xV;SA.u=uV;
+  clearLog('a-key-log');$('a-keys-result').style.display='block';
+  log('a-key-log',`p = ${p}`,'ia');log('a-key-log',`q = ${q}`,'ia');
+  log('a-key-log',`R = ${RV}`,'ia');log('a-key-log',`h = ${hV}`,'ia');
+  const exp_g=(p-1n)/q;
+  const g=ppow(hV,exp_g,RV,p);log('a-key-log',`g = h\\((p-1)/q) = ${g}`,'ok');
+  const y=ppow(g,xV,RV,p);log('a-key-log',`y = g\\x = ${y}`,'ok');
+  const z=ppow(g,uV,RV,p);log('a-key-log',`z = g\\u = ${z}`,'ok');
+  SA.g=g;SA.y=y;SA.z=z;SA.ready=true;
+  setDisp('a-disp-g',g.toString());setDisp('a-disp-R',RV.toString());
+  setDisp('a-disp-y',y.toString());setDisp('a-disp-z',z.toString());
+  log('a-key-log','✓ Kalitlar tayyor!','ok');
+}
+
+// ═══════════════════════════════════════════════════════
+//  A: IMZOLASH (1106 xesh + 1092 ERI)
+// ═══════════════════════════════════════════════════════
+function signMessage(){
+  if(!SA.ready){alert('Avval kalitlarni hisoblang!');return}
+  const msg=$('a-inp-msg').value;
+  if(!msg){alert('Xabar kiriting!');return}
+  SA.msg=msg;
+  const{p,q,R,g,x,u}=SA;
+
+  // ── 1106:2009 xesh ──
+  const hr=computeHash(msg,q);
+  const m=hr.m;
+
+  // Hash vizualizatsiya
+  $('a-sign-result').style.display='block';
+  renderHashDetail('a-hash-tbody','a-hash-summary',hr);
+
+  // ── 1092:2009 ERI ──
+  clearLog('a-sign-log');
+  log('a-sign-log',`[1106] H_final=${shortBig(hr.H_final)}`,'ih');
+  log('a-sign-log',`[1106] m = H_final mod q = ${m}`,'ia');
+
+  let c=x,k,T,r,s1,s,iter=0;
+  while(true){
+    iter++;if(iter>1000){log('a-sign-log','❌ 1000 iteratsiya!','warn');return}
+    const inner=mod(m+mod((1n+mod(m*R,q))*c,q),q);
+    k=computeHash(inner.toString(),q).m;
+    // k = m dan faqat xesh bilan hisoblash (qisqartirish uchun to'g'ri hashMessage)
+    k=hashFast(inner.toString(),q);
+    if(k===0n){c=mod(c+2n,q);continue}
+    log('a-sign-log',`k = ${k}`,'ia');
+    T=ppow(g,-k,R,p);
+    if(T===null){k=mod(k+1n,q);continue}
+    r=mod(m+mod((1n+mod(m*R,p))*T,p),p);
+    log('a-sign-log',`r = ${r}`);
+    if(mod(r,q)===0n){k=mod(k+1n,q);T=ppow(g,-k,R,p);r=mod(m+mod((1n+mod(m*R,p))*T,p),p);continue}
+    s1=mod(k-mod(r*x,q),q);
+    log('a-sign-log',`s1 = k - r*x = ${s1}`);
+    if(s1===0n){k=mod(k+1n,q);continue}
+    const uInv=modInv(u,q);
+    s=mod(s1*uInv,q);
+    if(s===0n){k=mod(k+1n,q);continue}
+    log('a-sign-log',`s = s1*u⁻¹ = ${s}`,'ok');
+    break;
+  }
+  SA.r=r;SA.s=s;
+  setDisp('a-disp-m',m.toString());
+  setDisp('a-disp-r',r.toString());
+  setDisp('a-disp-s',s.toString());
+  log('a-sign-log',`✓ Imzo: r=${shortBig(r)}, s=${shortBig(s)}`,'ok');
+}
+
+// hashFast — k uchun tez xesh (vizualizatsiyasiz), 1106 bilan mos
+function hashFast(msg, q) {
+  const bytes = new TextEncoder().encode(msg);
+  let H = 123456n, S = 0n;
+  for (const b of bytes) {
+    const M = BigInt(b);
+    const xorv = H ^ M;
+    const sm = mod(xorv + M, N_HASH);
+    H = mod(sm * sm, N_HASH);
+    S ^= M;
+  }
+  const L = BigInt(bytes.length * 8);
+  let xv = H ^ L; let sm = mod(xv + L, N_HASH); H = mod(sm * sm, N_HASH);
+  xv = H ^ S; sm = mod(xv + S, N_HASH); H = mod(sm * sm, N_HASH);
+  return mod(H, q);
+}
+
+// ═══════════════════════════════════════════════════════
+//  A → B UZATISH
+// ═══════════════════════════════════════════════════════
+function transferToB(){
+  if(!SA.ready){alert('Avval kalitlarni hisoblang!');return}
+  if(!SA.r||!SA.s){alert('Avval xabarni imzolang!');return}
+  $('b-no-keys').style.display='none';$('b-pub-keys').style.display='block';
+  setDisp('b-recv-q',SA.q.toString());setDisp('b-recv-p',SA.p.toString());
+  setDisp('b-recv-R',SA.R.toString());setDisp('b-recv-g',SA.g.toString());
+  setDisp('b-recv-y',SA.y.toString());setDisp('b-recv-z',SA.z.toString());
+  $('b-ver-msg').value=SA.msg;$('b-ver-r').value=SA.r.toString();$('b-ver-s').value=SA.s.toString();
+  $('b-fake-msg').value=SA.msg;$('b-fake-r').value=SA.r.toString();$('b-fake-s').value=SA.s.toString();
+  const bar=$('transfer-bar');
+  bar.style.background='linear-gradient(90deg,rgba(0,229,255,0.13),rgba(181,122,255,0.13))';
+  setTimeout(()=>{bar.style.background=''},900);
+  alert('✓ A dan B ga muvaffaqiyatli uzatildi!\nB panelida tekshirishingiz mumkin.');
+}
+
+// ═══════════════════════════════════════════════════════
+//  B: AVTOTO'LDIRISH
+// ═══════════════════════════════════════════════════════
+function autoFillVerify(){
+  if(!SA.r||!SA.s){alert('Avval A imzolashi kerak!');return}
+  $('b-ver-msg').value=SA.msg;$('b-ver-r').value=SA.r.toString();$('b-ver-s').value=SA.s.toString();
+}
+function fillFake(){
+  if(!SA.r||!SA.s){alert('Avval A imzolashi kerak!');return}
+  $('b-fake-msg').value=SA.msg;$('b-fake-r').value=SA.r.toString();$('b-fake-s').value=SA.s.toString();
+}
+
+// ═══════════════════════════════════════════════════════
+//  B: TEKSHIRISH (1106 xesh + 1092 ERI)
+// ═══════════════════════════════════════════════════════
+function _verify(msg, rStr, sStr, tbodyId, summaryId, logId, statusId, resultId) {
+  if(!SA.ready){alert("A foydalanuvchi kalitlari yo'q!");return}
+  if(!msg||!rStr||!sStr){alert('Xabar, r va s kiriting!');return}
+  const{p,q,R,y,z}=SA;
+  const r=BigInt(rStr), s=BigInt(sStr);
+
+  // ── 1106:2009 xesh ──
+  const hr=computeHash(msg,q);
+  const m=hr.m;
+
+  // Natija kartocheck
+  $(resultId).style.display='block';
+  renderHashDetail(tbodyId, summaryId, hr);
+
+  clearLog(logId);
+  const statusEl=$(statusId);
+  statusEl.className='status-box show';
+
+  log(logId,`[1106] H_final=${shortBig(hr.H_final)}`,'ih');
+  log(logId,`[1106] m = H_final mod q = ${m}`,'ib');
+
+  // ── 1092:2009 tekshirish ──
+  const Lq=q.toString(2).length,Lp=p.toString(2).length;
+  const Ls=s.toString(2).length,Lr=r.toString(2).length;
+  log(logId,`L(s)=${Ls}≤L(q)=${Lq}: ${Ls<=Lq}, L(r)=${Lr}≤L(p)=${Lp}: ${Lr<=Lp}`);
+  if(Ls>Lq||Lr>Lp){
+    log(logId,'❌ Uzunlik sharti bajarilmadi!','warn');
+    statusEl.textContent='✗ IMZO XATO — uzunlik';
+    statusEl.className='status-box show fail';return;
+  }
+  const z0=ppow(z,s,R,p); log(logId,`z0 = z\\s = ${shortBig(z0)}`);
+  const rp=mod(r,q);       log(logId,`r' = r mod q = ${rp}`);
+  const y2=ppow(y,rp,R,p); log(logId,`y2 = y\\r' = ${shortBig(y2)}`);
+  const z1=mod(z0+mod((1n+mod(z0*R,p))*y2,p),p); log(logId,`z1 = z0⊗y2 = ${shortBig(z1)}`);
+  const y3=mod(z1+mod((1n+mod(z1*R,p))*r,p),p);  log(logId,`y3 = z1⊗r = ${shortBig(y3)}`);
+  log(logId,`m  = ${m}`,'ib');log(logId,`y3 = ${y3}`,'ib');
+  if(m===y3){
+    log(logId,'✓ m == y3 → IMZO HAQIQIY','ok');
+    statusEl.textContent='✓ IMZO HAQIQIY';statusEl.className='status-box show ok';
+  } else {
+    log(logId,'✗ m ≠ y3 → IMZO XATO / SOXTA','warn');
+    statusEl.textContent='✗ IMZO XATO YOKI SOXTA';statusEl.className='status-box show fail';
+  }
+}
+
+function verifySignature(){
+  _verify(
+    $('b-ver-msg').value,$('b-ver-r').value.trim(),$('b-ver-s').value.trim(),
+    'b-hash-tbody','b-hash-summary','b-ver-log','b-ver-status','b-ver-result'
+  );
+}
+function verifyFake(){
+  _verify(
+    $('b-fake-msg').value,$('b-fake-r').value.trim(),$('b-fake-s').value.trim(),
+    'bf-hash-tbody','bf-hash-summary','b-fake-log','b-fake-status','b-fake-result'
+  );
+}
+</script>
+</body>
+</html>

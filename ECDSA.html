@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mukammal ECDSA Simulyatori</title>
+    <style>
+        :root { 
+            --primary: #2980b9; 
+            --success: #27ae60; 
+            --verify: #8e44ad; 
+            --danger: #e74c3c; 
+            --dark: #2c3e50; 
+            --bg: #f4f7f6;
+            --alice: #d35400;
+            --bob: #16a085;
+            --warning: #f39c12;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); margin: 0; padding: 20px; color: var(--dark); }
+        .container { background: white; max-width: 900px; margin: 0 auto; padding: 30px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
+        h1 { text-align: center; color: var(--dark); border-bottom: 3px solid var(--primary); padding-bottom: 10px; margin-bottom: 30px; }
+        section { margin-bottom: 25px; padding: 20px; border: 1px solid #e1e4e8; border-radius: 8px; background: #fafbfc; transition: border-color 0.3s; }
+        h3 { margin-top: 0; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        .form-group { display: flex; flex-direction: column; }
+        label { font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: #444; }
+        input, select { padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 15px; transition: 0.3s; background: #fff;}
+        input:focus, select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(41, 128, 185, 0.2); }
+        input[readonly] { background: #e9ecef; cursor: not-allowed; font-weight: bold; }
+        button { padding: 12px 20px; border: none; border-radius: 6px; color: white; font-weight: bold; font-size: 15px; cursor: pointer; transition: 0.2s; width: 100%; margin-top: 10px; }
+        button:hover { filter: brightness(1.1); }
+        
+        .btn-blue { background-color: var(--primary); }
+        .btn-green { background-color: var(--success); }
+        .btn-purple { background-color: var(--verify); }
+        .btn-alice { background-color: var(--alice); }
+        .btn-bob { background-color: var(--bob); }
+
+        .result-box { margin-top: 15px; padding: 15px; background: #eef2f7; border-left: 5px solid var(--primary); border-radius: 4px; font-family: 'Courier New', Courier, monospace; font-size: 14px; white-space: pre-wrap; line-height: 1.6; display: none; max-height: 250px; overflow-y: auto;}
+        
+        /* Majburiy ko'rsatish (display: block !important qo'shildi) */
+        .status-valid { background: #e9f7ef; color: #1e8449; border-left-color: var(--success); display: block !important; }
+        .status-invalid { background: #fdedec; color: #c0392b; border-left-color: var(--danger); display: block !important; }
+        .status-info { display: block !important; }
+        
+        .formula { background: #fff; padding: 8px 12px; border-radius: 4px; border: 1px dashed #bbb; font-weight: bold; font-size: 16px; color: var(--dark); margin-bottom: 15px; display: inline-block; }
+        .dual-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .user-card { padding: 15px; border-radius: 8px; border: 1px solid #ddd; background: #fff;}
+        .user-card h4 { margin-top: 0; text-align: center; }
+        
+        .direction-box { background: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Mukammal ECDSA Simulyatori</h1>
+
+    <section>
+        <h3>1. Egri Chiziq Parametrlari</h3>
+        <p style="font-size: 14px; color: #666; margin-top: 0;">a va b qiymatlari uchun manfiy son yoki kasr (masalan: 1/2) kiritish mumkin.</p>
+        <div class="grid">
+            <div class="form-group"><label>p (Tub son):</label><input type="number" id="p" value="23" oninput="resetAll()"></div>
+            <div class="form-group"><label>a (Ixtiyoriy son):</label><input type="text" id="a_in" value="2/5" oninput="resetAll()"></div>
+            <div class="form-group"><label>b (Ixtiyoriy son):</label><input type="text" id="b_in" value="-5" oninput="resetAll()"></div>
+        </div>
+        <button class="btn-blue" onclick="findPoints()">Nuqtalarni Hisoblash</button>
+        <div id="resPoints" class="result-box"></div>
+    </section>
+
+    <section>
+        <h3>2. Asosiy Nuqta (G) va Tartibi (n)</h3>
+        <div class="grid">
+            <div class="form-group">
+                <label>G (x, y) ni tanlang:</label>
+                <select id="g_select" disabled onchange="checkG()">
+                    <option value="">Avval nuqtalarni hisoblang</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Egri chiziq tartibi (n):</label>
+                <input type="number" id="n" readonly>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h3>3. Ikkala Foydalanuvchi Kalitlari</h3>
+        <p class="formula">Shart: 0 < d < n</p>
+        <div class="dual-grid">
+            <div class="user-card" style="border-top: 4px solid var(--alice);">
+                <h4 style="color: var(--alice);">Alisa</h4>
+                <div class="form-group"><label>d_A (Maxfiy kalit):</label><input type="number" id="d_A" value="5" oninput="updateValidK()"></div>
+                <button class="btn-alice" onclick="genKey('A')">Alisa kalitini hisoblash</button>
+                <div id="resKeyA" class="result-box"></div>
+            </div>
+            <div class="user-card" style="border-top: 4px solid var(--bob);">
+                <h4 style="color: var(--bob);">Bob</h4>
+                <div class="form-group"><label>d_B (Maxfiy kalit):</label><input type="number" id="d_B" value="7" oninput="updateValidK()"></div>
+                <button class="btn-bob" onclick="genKey('B')">Bob kalitini hisoblash</button>
+                <div id="resKeyB" class="result-box"></div>
+            </div>
+        </div>
+    </section>
+
+    <div class="direction-box">
+        <div class="form-group">
+            <label style="font-size: 16px; color: #856404; font-weight: bold;">Aloqa yo'nalishini tanlang:</label>
+            <select id="direction" onchange="changeDirection()" style="border-color: #ffeeba; background: #fff; font-weight: bold; font-size: 16px; padding: 12px;">
+                <option value="AtoB">Alisadan ➔ Bobga (Alisa imzolaydi, Bob tekshiradi)</option>
+                <option value="BtoA">Bobdan ➔ Alisaga (Bob imzolaydi, Alisa tekshiradi)</option>
+            </select>
+        </div>
+    </div>
+
+    <section id="secSign" style="border-width: 2px;">
+        <h3 id="signTitle">4. Alisa Imzo Qo'yishi</h3>
+        <div class="grid">
+            <div class="form-group">
+                <label>Xabar xeshi h(m) > 0:</label>
+                <input type="number" id="hm" value="10" oninput="updateValidK()">
+            </div>
+            <div class="form-group">
+                <label style="color: var(--success);">Tasodifiy k (Faqat yaroqlilari):</label>
+                <select id="k_select" style="border-color: var(--success); font-weight: bold;">
+                    <option value="">Avval G nuqtani tanlang</option>
+                </select>
+            </div>
+        </div>
+        <button class="btn-green" id="btnSign" onclick="runSign()">Alisa nomidan imzolash</button>
+        <div id="resSign" class="result-box"></div>
+    </section>
+
+    <section id="secVerify" style="border-width: 2px; border-color: var(--verify);">
+        <h3 id="verifyTitle" style="color: var(--verify);">5. Bob Imzoni Tekshirishi</h3>
+        <div class="grid">
+            <div class="form-group"><label id="lblQx">Jo'natuvchi Q(x):</label><input type="number" id="qx_sender" readonly></div>
+            <div class="form-group"><label id="lblQy">Jo'natuvchi Q(y):</label><input type="number" id="qy_sender" readonly></div>
+            <div class="form-group"><label>Olingan Imzo (r):</label><input type="number" id="r_in"></div>
+            <div class="form-group"><label>Olingan Imzo (s):</label><input type="number" id="s_in"></div>
+        </div>
+        <button class="btn-purple" id="btnVerify" onclick="runVerify()">Bob nomidan tekshirish</button>
+        <div id="resVerify" class="result-box"></div>
+    </section>
+</div>
+
+<script>
+    // --- GLOBAL O'ZGARUVCHILAR ---
+    let CURVE_POINTS = [];
+    let G_POINT = null;
+    let ORDER_N = null; 
+    let REAL_A = null;
+    let REAL_B = null;
+    let Q_A = null;
+    let Q_B = null;
+
+    // --- MATEMATIK FUNKSIYALAR ---
+    const mod = (n, m) => ((n % m) + m) % m;
+
+    function isPrime(num) {
+        if (num <= 1) return false;
+        if (num === 2) return true;
+        for (let i = 2; i <= Math.sqrt(num); i++) {
+            if (num % i === 0) return false;
+        }
+        return true;
+    }
+
+    // 100% ishonchli (loop) orqali teskari qiymat topuvchi algoritm
+    function modInverse(a, m) {
+        if (m <= 1) return null;
+        let tempA = mod(a, m);
+        for (let x = 1; x < m; x++) {
+            if (mod(tempA * x, m) === 1) return x;
+        }
+        return null;
+    }
+
+    function parseModuloStr(valStr, p) {
+        valStr = valStr.toString().trim();
+        if (valStr.includes('/')) {
+            let parts = valStr.split('/');
+            let num = parseInt(parts[0]);
+            let den = parseInt(parts[1]);
+            let denInv = modInverse(den, p);
+            if (denInv === null) throw new Error(`Kasr maxraji (${den}) uchun mod ${p} da teskari son yo'q!`);
+            return mod(num * denInv, p);
+        } else {
+            return mod(parseInt(valStr), p);
+        }
+    }
+
+    function pointAdd(P, Q, a, p) {
+        if (!P) return Q; 
+        if (!Q) return P; 
+        if (P.x === Q.x && P.y === mod(-Q.y, p)) return null; 
+        
+        let lam;
+        if (P.x === Q.x && P.y === Q.y) {
+            if (P.y === 0) return null; 
+            let num = mod(3 * Math.pow(P.x, 2) + a, p);
+            let den = modInverse(2 * P.y, p);
+            if (den === null) return null;
+            lam = mod(num * den, p);
+        } else {
+            let num = mod(Q.y - P.y, p);
+            let den = modInverse(Q.x - P.x, p);
+            if (den === null) return null;
+            lam = mod(num * den, p);
+        }
+        
+        let x3 = mod(lam * lam - P.x - Q.x, p);
+        let y3 = mod(lam * (P.x - x3) - P.y, p);
+        return {x: x3, y: y3};
+    }
+
+    function scalarMult(k, P, a, p) {
+        if (k <= 0 || !P) return null;
+        let R = null;
+        let Q_temp = {x: P.x, y: P.y};
+        let tempK = k;
+
+        while (tempK > 0) {
+            if (tempK % 2 === 1) R = pointAdd(R, Q_temp, a, p);
+            Q_temp = pointAdd(Q_temp, Q_temp, a, p);
+            tempK = Math.floor(tempK / 2);
+        }
+        return R;
+    }
+
+    // --- INTERFEYS MANTIG'I ---
+
+    function resetAll() {
+        document.getElementById('g_select').innerHTML = "<option value=''>Avval nuqtalarni hisoblang</option>";
+        document.getElementById('g_select').disabled = true;
+        document.getElementById('n').value = "";
+        document.getElementById('k_select').innerHTML = "<option value=''>Avval G nuqtani tanlang</option>";
+        G_POINT = null;
+        ORDER_N = null;
+        Q_A = null;
+        Q_B = null;
+        changeDirection();
+    }
+
+    function changeDirection() {
+        const dir = document.getElementById('direction').value;
+        const signTitle = document.getElementById('signTitle');
+        const btnSign = document.getElementById('btnSign');
+        const verifyTitle = document.getElementById('verifyTitle');
+        const lblQx = document.getElementById('lblQx');
+        const lblQy = document.getElementById('lblQy');
+        const btnVerify = document.getElementById('btnVerify');
+        const secSign = document.getElementById('secSign');
+        
+        document.getElementById('resSign').className = "result-box";
+        document.getElementById('resVerify').className = "result-box";
+        
+        if (dir === 'AtoB') {
+            secSign.style.borderColor = "var(--alice)";
+            signTitle.innerText = "4. Alisa Imzo Qo'yishi";
+            signTitle.style.color = "var(--alice)";
+            btnSign.innerText = "Alisa nomidan imzolash";
+            btnSign.className = "btn-alice";
+            
+            verifyTitle.innerText = "5. Bob Imzoni Tekshirishi";
+            lblQx.innerText = "Alisaning Q_A(x):";
+            lblQy.innerText = "Alisaning Q_A(y):";
+            btnVerify.innerText = "Bob nomidan tekshirish";
+
+            if(Q_A) {
+                document.getElementById('qx_sender').value = Q_A.x;
+                document.getElementById('qy_sender').value = Q_A.y;
+            } else {
+                document.getElementById('qx_sender').value = "";
+                document.getElementById('qy_sender').value = "";
+            }
+        } else {
+            secSign.style.borderColor = "var(--bob)";
+            signTitle.innerText = "4. Bob Imzo Qo'yishi";
+            signTitle.style.color = "var(--bob)";
+            btnSign.innerText = "Bob nomidan imzolash";
+            btnSign.className = "btn-bob";
+
+            verifyTitle.innerText = "5. Alisa Imzoni Tekshirishi";
+            lblQx.innerText = "Bobning Q_B(x):";
+            lblQy.innerText = "Bobning Q_B(y):";
+            btnVerify.innerText = "Alisa nomidan tekshirish";
+
+            if(Q_B) {
+                document.getElementById('qx_sender').value = Q_B.x;
+                document.getElementById('qy_sender').value = Q_B.y;
+            } else {
+                document.getElementById('qx_sender').value = "";
+                document.getElementById('qy_sender').value = "";
+            }
+        }
+        updateValidK();
+    }
+
+    // Barcha kafolatlangan k larni topuvchi avtomatik funksiya
+    function updateValidK() {
+        const kSelect = document.getElementById('k_select');
+        kSelect.innerHTML = "";
+        
+        if (!ORDER_N || !G_POINT) {
+            kSelect.innerHTML = "<option value=''>Avval 1 va 2-qadamni bajaring</option>";
+            return;
+        }
+
+        const hm = parseInt(document.getElementById('hm').value);
+        const dir = document.getElementById('direction').value;
+        const senderName = (dir === 'AtoB') ? 'A' : 'B';
+        const d_sender = parseInt(document.getElementById(`d_${senderName}`).value);
+        const p = parseInt(document.getElementById('p').value);
+
+        if (isNaN(hm) || isNaN(d_sender)) {
+            kSelect.innerHTML = "<option value=''>Xesh va Kalitni kiriting</option>";
+            return;
+        }
+
+        let validCount = 0;
+        
+        // 1 dan n-1 gacha barcha k larni simulyatsiya qilib tekshiramiz
+        for (let k = 1; k < ORDER_N; k++) {
+            let k_inv = modInverse(k, ORDER_N);
+            if (k_inv === null) continue; // k ning teskarisi yo'q
+
+            let kG = scalarMult(k, G_POINT, REAL_A, p);
+            if (!kG) continue; 
+            
+            let r = mod(kG.x, ORDER_N);
+            if (r === 0) continue; 
+
+            let s = mod(k_inv * (hm + d_sender * r), ORDER_N);
+            if (s === 0) continue; 
+            
+            let s_inv = modInverse(s, ORDER_N);
+            if (s_inv === null) continue; // ENGI ASOSIY SHART: s ning ham teskarisi bo'lishi shart
+
+            let opt = document.createElement('option');
+            opt.value = k;
+            opt.text = k;
+            kSelect.add(opt);
+            validCount++;
+        }
+
+        if (validCount === 0) {
+            kSelect.innerHTML = "<option value=''>Mos 'k' topilmadi (h yoki d ni o'zgartiring)</option>";
+        }
+    }
+
+    // QADAM 1
+    function findPoints() {
+        const resBox = document.getElementById('resPoints');
+        const selectBox = document.getElementById('g_select');
+        
+        resBox.className = "result-box";
+        selectBox.innerHTML = ""; 
+        CURVE_POINTS = [];
+        G_POINT = null;
+        ORDER_N = null;
+        document.getElementById('n').value = "";
+        updateValidK();
+
+        try {
+            const p = parseInt(document.getElementById('p').value);
+            const a_in = document.getElementById('a_in').value;
+            const b_in = document.getElementById('b_in').value;
+
+            if (isNaN(p) || !a_in || !b_in) throw new Error("Barcha maydonlarni to'ldiring.");
+            if (!isPrime(p)) throw new Error("p (Modul) qat'iy tub son bo'lishi shart!");
+            
+            REAL_A = parseModuloStr(a_in, p);
+            REAL_B = parseModuloStr(b_in, p);
+
+            const disc = mod(4 * Math.pow(REAL_A, 3) + 27 * Math.pow(REAL_B, 2), p);
+            if (disc === 0) throw new Error(`Diskriminant 0 ga teng! Yaroqsiz egri chiziq.`);
+
+            for (let x = 0; x < p; x++) {
+                let rhs = mod(Math.pow(x, 3) + REAL_A * x + REAL_B, p);
+                for (let y = 0; y < p; y++) {
+                    if (mod(y * y, p) === rhs) {
+                        CURVE_POINTS.push({x, y});
+                    }
+                }
+            }
+
+            ORDER_N = CURVE_POINTS.length + 1; // +1 cheksizlik
+            document.getElementById('n').value = ORDER_N;
+
+            let outText = `📌 HOSIL BO'LGAN FUNKSIYA:\n`;
+            outText += `y² ≡ x³ + ${REAL_A}x + ${REAL_B} (mod ${p})\n\n`;
+            outText += `Egri chiziq tartibi (n) = ${CURVE_POINTS.length} ta nuqta + 1 (cheksizlik) = ${ORDER_N}\n`;
+            outText += `Nuqtalar ro'yxati:\n`;
+            
+            let defaultOpt = document.createElement('option');
+            defaultOpt.text = "-- G nuqtani tanlang --";
+            defaultOpt.value = "";
+            selectBox.add(defaultOpt);
+
+            CURVE_POINTS.forEach((pt, index) => {
+                outText += `(${pt.x}, ${pt.y}) `;
+                if ((index + 1) % 6 === 0) outText += "\n";
+                let opt = document.createElement('option');
+                opt.value = `${pt.x},${pt.y}`;
+                opt.text = `(${pt.x}, ${pt.y})`;
+                selectBox.add(opt);
+            });
+
+            resBox.innerText = outText;
+            resBox.classList.add('status-info');
+            selectBox.disabled = false;
+
+        } catch (err) {
+            resBox.innerText = `❌ Xatolik: ${err.message}`;
+            resBox.classList.add('status-invalid');
+            selectBox.disabled = true;
+        }
+    }
+
+    function checkG() {
+        const val = document.getElementById('g_select').value;
+        if(val) {
+            const [gx, gy] = val.split(',').map(Number);
+            G_POINT = {x: gx, y: gy};
+        } else {
+            G_POINT = null;
+        }
+        updateValidK();
+    }
+
+    // QADAM 3
+    function genKey(user) {
+        const resBox = document.getElementById(`resKey${user}`);
+        resBox.className = "result-box";
+        try {
+            if (!G_POINT || !ORDER_N) throw new Error("Avval yuqoridan G nuqtani tanlang!");
+            
+            const p = parseInt(document.getElementById('p').value);
+            const dStr = document.getElementById(`d_${user}`).value;
+            
+            if(!/^\d+$/.test(dStr)) throw new Error("Maxfiy kalit faqat butun natural son bo'lishi shart!");
+            const d = parseInt(dStr);
+
+            if (d <= 0 || d >= ORDER_N) {
+                throw new Error(`Maxfiy kalit xato! Qoidaga ko'ra 0 < d < ${ORDER_N} bo'lishi shart.`);
+            }
+
+            const Q = scalarMult(d, G_POINT, REAL_A, p);
+            if (!Q) throw new Error("Ochiq kalit Cheksizlik(O) bo'lib qoldi. Boshqa d oling.");
+
+            if (user === 'A') Q_A = Q;
+            else Q_B = Q;
+            
+            changeDirection(); // Qx va Qy larni yangilash uchun
+
+            resBox.innerText = `Muvaffaqiyatli!\nMaxfiy kalit (d_${user}): ${d}\nOchiq kalit (Q_${user}): (${Q.x}, ${Q.y})`;
+            resBox.classList.add('status-valid');
+        } catch (err) {
+            resBox.innerText = `❌ Xatolik: ${err.message}`;
+            resBox.classList.add('status-invalid');
+        }
+    }
+
+    // QADAM 4
+    function runSign() {
+        const resBox = document.getElementById('resSign');
+        resBox.className = "result-box"; // reset
+        try {
+            const dir = document.getElementById('direction').value;
+            const isAliceSender = (dir === 'AtoB');
+            const senderName = isAliceSender ? 'A' : 'B';
+
+            if (isAliceSender && !Q_A) throw new Error("Avval Alisaning kalitlarini generatsiya qiling!");
+            if (!isAliceSender && !Q_B) throw new Error("Avval Bobning kalitlarini generatsiya qiling!");
+            
+            const p = parseInt(document.getElementById('p').value);
+            const d_sender = parseInt(document.getElementById(`d_${senderName}`).value);
+            const hm = parseInt(document.getElementById('hm').value);
+            
+            const kStr = document.getElementById('k_select').value;
+            if(!kStr) throw new Error("Ro'yxatdan yaroqli k tasodifiy sonini tanlang!");
+            const k = parseInt(kStr);
+
+            const kG = scalarMult(k, G_POINT, REAL_A, p);
+            const r = mod(kG.x, ORDER_N);
+            const k_inv = modInverse(k, ORDER_N);
+            const s = mod(k_inv * (hm + d_sender * r), ORDER_N);
+
+            document.getElementById('r_in').value = r;
+            document.getElementById('s_in').value = s;
+
+            let out = `Jo'natuvchi: ${isAliceSender ? 'Alisa' : 'Bob'}\n`;
+            out += `1-qadam: (x1, y1) = k*G = (${kG.x}, ${kG.y})\n`;
+            out += `2-qadam: r = x1 mod n = ${kG.x} mod ${ORDER_N} = ${r}\n`;
+            out += `3-qadam: k⁻¹ mod n = ${k_inv}\n`;
+            out += `4-qadam: s = k⁻¹(h + d_${senderName}*r) mod n = ${s}\n\n`;
+            out += `✅ YAKUNIY IMZO: (r, s) = (${r}, ${s})`;
+
+            resBox.innerText = out;
+            resBox.classList.add('status-valid');
+        } catch (err) {
+            resBox.innerText = `❌ Xatolik: ${err.message}`;
+            resBox.classList.add('status-invalid');
+        }
+    }
+
+    // QADAM 5
+    function runVerify() {
+        const resBox = document.getElementById('resVerify');
+        resBox.className = "result-box"; // reset
+        try {
+            if (!ORDER_N || !G_POINT) throw new Error("Tizim ishga tushmagan. Avvalgi qadamlarni bajaring.");
+
+            const p = parseInt(document.getElementById('p').value);
+            const hm = parseInt(document.getElementById('hm').value);
+            
+            const qx = parseInt(document.getElementById('qx_sender').value);
+            const qy = parseInt(document.getElementById('qy_sender').value);
+            const r = parseInt(document.getElementById('r_in').value);
+            const s = parseInt(document.getElementById('s_in').value);
+
+            const dir = document.getElementById('direction').value;
+            const senderQName = (dir === 'AtoB') ? 'Q_A' : 'Q_B';
+
+            if (isNaN(qx) || isNaN(qy)) throw new Error("Jo'natuvchining ochiq kaliti kiritilmagan.");
+            if (isNaN(r) || isNaN(s)) throw new Error("Imzo qismlari (r yoki s) kiritilmagan.");
+            if (r <= 0 || r >= ORDER_N || s <= 0 || s >= ORDER_N) {
+                throw new Error(`Imzo yaroqsiz! r va s qiymatlari (0, ${ORDER_N}) oraliqda bo'lishi shart.`);
+            }
+
+            const Q_Sender = { x: qx, y: qy };
+            
+            const w = modInverse(s, ORDER_N);
+            if (w === null) throw new Error(`s=${s} uchun mod ${ORDER_N} bo'yicha teskari qiymat topilmadi.`);
+
+            const u1 = mod(hm * w, ORDER_N);
+            const u2 = mod(r * w, ORDER_N);
+
+            const p1 = scalarMult(u1, G_POINT, REAL_A, p);
+            const p2 = scalarMult(u2, Q_Sender, REAL_A, p);
+            const X = pointAdd(p1, p2, REAL_A, p);
+
+            if (!X) throw new Error("X nuqta cheksizlikka (O) teng bo'lib qoldi. Imzo rad etildi.");
+
+            const v = mod(X.x, ORDER_N);
+
+            let out = `Hisob-kitob qadamlari:\n`;
+            out += `w = s⁻¹ mod n = ${w}\n`;
+            out += `u1 = (h * w) mod n = ${u1}\n`;
+            out += `u2 = (r * w) mod n = ${u2}\n`;
+            out += `X = u1*G + u2*${senderQName} = (${X.x}, ${X.y})\n`;
+            out += `v = X.x mod n = ${v}\n\n`;
+
+            if (v === r) {
+                resBox.innerText = out + `🎉 NATIJA: v = r = ${v}. Imzo HAQIQIY!`;
+                resBox.classList.add('status-valid');
+            } else {
+                resBox.innerText = out + `🚫 NATIJA: v(${v}) ≠ r(${r}). Imzo NOTO'G'RI!`;
+                resBox.classList.add('status-invalid');
+            }
+        } catch (err) {
+            resBox.innerText = `⚠️ Xatolik: ${err.message}`;
+            resBox.classList.add('status-invalid');
+        }
+    }
+</script>
+
+</body>
+</html>
